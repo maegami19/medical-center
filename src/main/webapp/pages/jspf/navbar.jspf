@@ -1,0 +1,98 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">MEDICAL CENTER</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <c:choose>
+                <c:when test="${sessionScope.user == null}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Sign in</a>
+                    </li>
+                </c:when>
+                <c:otherwise>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Log out</a>
+                    </li>
+                </c:otherwise>
+            </c:choose>
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Features</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="infopages/pricing.html">Pricing</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">About us</a>
+            </li>
+            <c:choose>
+                <c:when test="${sessionScope.user.role == 'admin'}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Admin Panel
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <form method="post">
+                                <a class="dropdown-item">Show doctors:</a>
+                                <a class="dropdown-item" href="/showdoc_by_alphabet">by alphabet</a>
+                                <a class="dropdown-item" href="/showdoc_by_category">by category</a>
+                                <a class="dropdown-item" href="/showdoc_by_count_patients">by count of patients</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item">Show patients:</a>
+                                <a class="dropdown-item" href="/showpatients_by_alphabet">by alphabet</a>
+                                <a class="dropdown-item" href="/showpatients_by_birthday">by birthday</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/register">Register user</a>
+                            </form>
+                        </div>
+                    </li>
+                </c:when>
+                <c:when test="${sessionScope.user.role == 'doctor'}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownDoctor" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Doctor Panel
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <form method="post">
+                                <a class="dropdown-item" href="/open_medcard">Open medcard</a>
+                                <a class="dropdown-item" href="/close_medcard">Close medcard</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/show_my_patients">Show my patients</a>
+                            </form>
+                        </div>
+                    </li>
+                </c:when>
+                <c:when test="${sessionScope.user.role == 'nurse'}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownNurse" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Nurse Panel
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <form method="post">
+                                <a class="dropdown-item" href="/open_medcard">Open medcard</a>
+                                <a class="dropdown-item" href="/close_medcard">Close medcard</a>
+                            </form>
+                        </div>
+                    </li>
+                </c:when>
+                <c:when test="${sessionScope.user.role == 'patient'}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownPatient" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Patient Panel
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <form method="post">
+                                <a class="dropdown-item" href="/showmed">Show my medcards notes</a>
+                            </form>
+                        </div>
+                    </li>
+                </c:when>
+            </c:choose>
+        </ul>
+    </div>
+</nav>
