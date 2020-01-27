@@ -1,6 +1,20 @@
 package ua.nure.admin.summarytask.db;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLWarning;
+import java.sql.Savepoint;
+import java.sql.SQLClientInfoException;
+import java.sql.Array;
+import java.sql.NClob;
+import java.sql.Struct;
+import java.sql.SQLXML;
+import java.sql.Clob;
+import java.sql.Blob;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;

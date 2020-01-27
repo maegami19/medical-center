@@ -1,5 +1,7 @@
 package ua.nure.admin.summarytask.controller;
 
+import ua.nure.admin.summarytask.constant.Constant;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,10 +13,9 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/logout"})
 public class LogOutServlet extends HttpServlet {
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
-
-        session.removeAttribute("user");
+        session.removeAttribute(Constant.USER);
         session.invalidate();
         response.sendRedirect("/");
     }

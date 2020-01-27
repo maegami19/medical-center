@@ -5,53 +5,85 @@ import ua.nure.admin.summarytask.db.constant.DBConstant;
 import ua.nure.admin.summarytask.entity.Nurse;
 import ua.nure.admin.summarytask.repository.NurseRepository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
 
 public class NurseRepositoryImpl extends AbstractRepository implements NurseRepository {
 
     private final Logger log = Logger.getLogger(NurseRepositoryImpl.class);
 
     @Override
-    public void addNurse(Nurse nurse) {
+    public boolean addNurse(Nurse nurse) {
         Connection connection = getConnection();
-        PreparedStatement prstmt = null;
+        PreparedStatement preparedStatement = null;
+        boolean flag = false;
 
         try {
-            prstmt = connection.prepareStatement(DBConstant.ADD_NURSE);
-            prstmt.setString(1, nurse.getFirstname());
-            prstmt.setString(2, nurse.getLastname());
-            prstmt.setString(3, nurse.getUsername());
-            prstmt.execute();
-            log.info("Nurse added succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.ADD_NURSE);
+            preparedStatement.setString(1, nurse.getFirstname());
+            preparedStatement.setString(2, nurse.getLastname());
+            preparedStatement.setString(3, nurse.getUsername());
+            preparedStatement.execute();
+            flag = true;
+            log.info("Nurse added successfully.");
         } catch (SQLException e) {
-            log.error("Cannot add nurse." + e);
+            log.error("Cannot add nurse.", e);
             e.printStackTrace();
         } finally {
-            close(prstmt);
+            close(preparedStatement);
             close(connection);
         }
+        return flag;
     }
 
     @Override
     public int getNurseId(String username) {
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
-        int id = 0;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        int id = -1;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_NURSE_ID + '\'' + username + '\'');
-            rs.next();
-            id = rs.getInt("id");
-            log.info("Get nurse id succesfully");
+            preparedStatement = connection.prepareStatement(DBConstant.GET_NURSE_ID);
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            id = resultSet.getInt("id");
+            log.info("Get nurse id successfully");
         } catch (SQLException e) {
-            log.error("Cannot get nurse id: " + e);
+            log.error("Cannot get nurse id: ", e);
         } finally {
-            close(stmt);
+            close(preparedStatement);
             close(connection);
-            close(rs);
+            close(resultSet);
         }
         return id;
+    }
+
+    @Override
+    public String getNameById(int id) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        String result = "";
+
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.GET_NURSE_NAME_BY_ID);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                result = result + resultSet.getString("firstname") + " " + resultSet.getString("lastname");
+            }
+            log.info("Get nurse name successfully");
+        } catch (SQLException e) {
+            log.error("Cannot get nurse name: ", e);
+        } finally {
+            close(preparedStatement);
+            close(connection);
+            close(resultSet);
+        }
+        return result;
     }
 }

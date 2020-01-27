@@ -1,0 +1,12 @@
+<taglib>
+    <tlib-version>1.0</tlib-version>
+    <jsp-version>2.0</jsp-version>
+    <short-name>My TLD</short-name>
+    <uri>WEB-INF/custom.tld</uri>
+
+    <tag>
+        <name>Error</name>
+        <tag-class>ua.nure.admin.summarytask.tag.ErrorTag</tag-class>
+        <body-content>empty</body-content>
+    </tag>
+</taglib>

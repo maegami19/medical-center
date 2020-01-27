@@ -1,5 +1,7 @@
 package ua.nure.admin.summarytask.entity;
 
+import java.util.Objects;
+
 public class Medcard {
 
     private int id;
@@ -48,6 +50,38 @@ public class Medcard {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "Medcard{" +
+                "id=" + id +
+                ", fromMedic='" + fromMedic + '\'' +
+                ", toPatient=" + toPatient +
+                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", status='" + status + '\'' +
+                ", diagnosis='" + diagnosis + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Medcard medcard = (Medcard) o;
+        return id == medcard.id &&
+                toPatient == medcard.toPatient &&
+                Objects.equals(fromMedic, medcard.fromMedic) &&
+                Objects.equals(type, medcard.type) &&
+                Objects.equals(description, medcard.description) &&
+                Objects.equals(status, medcard.status) &&
+                Objects.equals(diagnosis, medcard.diagnosis);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, fromMedic, toPatient, type, description, status, diagnosis);
     }
 
     public String getDescription() {

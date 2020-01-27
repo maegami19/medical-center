@@ -55,7 +55,7 @@ public class Doctor {
 
     @Override
     public String toString() {
-        return  id + "\t" + firstname + "\t" +  lastname + "\t" + countPatient + "\t" + category;
+        return id + "\t" + firstname + "\t" + lastname + "\t" + countPatient + "\t" + category;
     }
 
     public void setUsername(String username) {

@@ -5,7 +5,11 @@ import ua.nure.admin.summarytask.db.constant.DBConstant;
 import ua.nure.admin.summarytask.entity.User;
 import ua.nure.admin.summarytask.repository.UserRepository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,63 +19,177 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
 
     @Override
     public List<User> getAllUsers() {
-        List<User> users = new ArrayList<User>();
+        List<User> users = new ArrayList<>();
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.FIND_ALL_USERS);
-            users = extractUsers(rs);
-            log.info("Get users succesfully.");
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(DBConstant.FIND_ALL_USERS);
+            users = extractUsers(resultSet);
+            log.info("Get users successfully.");
         } catch (SQLException e) {
             log.error("Cannot get users", e);
-            e.printStackTrace();
         } finally {
-            close(rs);
+            close(resultSet);
             close(connection);
-            close(stmt);
+            close(statement);
         }
         return users;
     }
 
     @Override
-    public void addUser(User user) {
+    public boolean addUser(User user) {
         Connection connection = getConnection();
-        PreparedStatement prstmt = null;
+        PreparedStatement preparedStatement = null;
+        boolean flag = false;
 
         try {
-            prstmt = connection.prepareStatement(DBConstant.ADD_USER);
-            prstmt.setString(1, user.getUsername());
-            prstmt.setString(2, user.getPassword());
-            prstmt.setString(3, user.getRole());
-            prstmt.setString(4, user.getEmail());
-            prstmt.execute();
-            log.info("User added succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.ADD_USER);
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getPassword());
+            preparedStatement.setString(3, user.getRole());
+            preparedStatement.setString(4, user.getEmail());
+            preparedStatement.execute();
+            log.info("User added successfully.");
+            flag = true;
         } catch (SQLException e) {
-            log.error("Cannot added user", e);
-            e.printStackTrace();
+            log.error("Cannot added user");
         } finally {
-            close(prstmt);
+            close(preparedStatement);
+            close(connection);
+        }
+        return flag;
+    }
+
+    @Override
+    public User checkUser(String username, String password) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        User user = new User();
+
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.CHECK_USER);
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, password);
+            resultSet = preparedStatement.executeQuery();
+            user = extractUser(resultSet);
+            log.info("Check user successfully.");
+        } catch (SQLException e) {
+            log.error("Cannot check user", e);
+        } finally {
+            close(preparedStatement);
+            close(connection);
+            close(resultSet);
+        }
+        return user;
+    }
+
+    @Override
+    public void updateUserPassword(User user) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.UPDATE_USER_PASSWORD);
+            preparedStatement.setString(1, user.getPassword());
+            preparedStatement.setString(2, user.getUsername());
+            preparedStatement.execute();
+            log.info("User updated successfully.");
+        } catch (SQLException e) {
+            log.error("Cannot update user", e);
+        } finally {
+            close(preparedStatement);
             close(connection);
         }
     }
 
-    private List<User> extractUsers(ResultSet rs) throws SQLException {
-        List<User> users = new ArrayList<User>();
+    @Override
+    public void deleteUser(String username, String role) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
 
-        while (rs.next()) {
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.DELETE_USER);
+            preparedStatement.setString(1, username);
+            preparedStatement.execute();
+            if ("patient".equals(role)) {
+                preparedStatement = connection.prepareStatement(DBConstant.DELETE_PATIENT);
+                preparedStatement.setString(1, username);
+                preparedStatement.execute();
+                preparedStatement = connection.prepareStatement(DBConstant.UPDATE_COUNT);
+                preparedStatement.setString(1, username);
+                preparedStatement.execute();
+            } else if ("doctor".equals(role)) {
+                preparedStatement = connection.prepareStatement(DBConstant.DELETE_DOCTOR);
+                preparedStatement.setString(1, username);
+                preparedStatement.execute();
+            } else if ("nurse".equals(role)) {
+                preparedStatement = connection.prepareStatement(DBConstant.DELETE_NURSE);
+                preparedStatement.setString(1, username);
+                preparedStatement.execute();
+            }
+            log.info("User deleted successfully.");
+        } catch (SQLException e) {
+            log.error("Cannot delete user", e);
+        } finally {
+            close(preparedStatement);
+            close(connection);
+        }
+    }
+
+    @Override
+    public User checkUser(String username) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        User user = new User();
+
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.CHECK_USER_BY_USERNAME);
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.executeQuery();
+            user = extractUser(resultSet);
+            log.info("Check user successfully.");
+        } catch (SQLException e) {
+            log.error("Cannot check user", e);
+        } finally {
+            close(preparedStatement);
+            close(connection);
+            close(resultSet);
+        }
+        return user;
+    }
+
+    private List<User> extractUsers(ResultSet resultSet) throws SQLException {
+        List<User> users = new ArrayList<>();
+
+        while (resultSet.next()) {
             User user = new User();
 
-            user.setId(rs.getInt("id"));
-            user.setUsername(rs.getString("username"));
-            user.setPassword(rs.getString("password"));
-            user.setRole(rs.getString("role"));
-            user.setEmail(rs.getString("email"));
+            user.setId(resultSet.getInt("id"));
+            user.setUsername(resultSet.getString("username"));
+            user.setPassword(resultSet.getString("password"));
+            user.setRole(resultSet.getString("role"));
+            user.setEmail(resultSet.getString("email"));
 
             users.add(user);
         }
         return users;
+    }
+
+    private User extractUser(ResultSet resultSet) throws SQLException {
+        User user = new User();
+
+        while (resultSet.next()) {
+            user.setId(resultSet.getInt("id"));
+            user.setUsername(resultSet.getString("username"));
+            user.setPassword(resultSet.getString("password"));
+            user.setRole(resultSet.getString("role"));
+        }
+
+        return user;
     }
 }

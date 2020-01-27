@@ -1,97 +1,132 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<%@ taglib tagdir="/WEB-INF/tags" prefix="my" %>
+<%@ page pageEncoding="UTF-8" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:set var="language"
+       value="${not empty param.language ? param.language : not empty language ? language : pageContext.request.locale}"
+       scope="session"/>
+<fmt:setLocale value="${language}"/>
+<fmt:setBundle basename="localization"/>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
     <a class="navbar-brand" href="/">MEDICAL CENTER</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-            <c:choose>
-                <c:when test="${sessionScope.user == null}">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">Sign in</a>
-                    </li>
-                </c:when>
-                <c:otherwise>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/logout">Log out</a>
-                    </li>
-                </c:otherwise>
-            </c:choose>
-            <li class="nav-item">
-                <a class="nav-link" href="/">Home</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Features</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="infopages/pricing.html">Pricing</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">About us</a>
-            </li>
+        <ul class="navbar-nav mr-auto">
             <c:choose>
                 <c:when test="${sessionScope.user.role == 'admin'}">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Admin Panel
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownAdmin"
+                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <fmt:message key="navbar.admin.panel"/>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <form method="post">
-                                <a class="dropdown-item">Show doctors:</a>
-                                <a class="dropdown-item" href="/showdoc_by_alphabet">by alphabet</a>
-                                <a class="dropdown-item" href="/showdoc_by_category">by category</a>
-                                <a class="dropdown-item" href="/showdoc_by_count_patients">by count of patients</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item">Show patients:</a>
-                                <a class="dropdown-item" href="/showpatients_by_alphabet">by alphabet</a>
-                                <a class="dropdown-item" href="/showpatients_by_birthday">by birthday</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/register">Register user</a>
-                            </form>
+                            <a class="dropdown-item"><fmt:message key="navbar.admin.showdoc"/>:</a>
+                            <a class="dropdown-item" href="/showDoctorsByAlph"><fmt:message
+                                    key="navbar.admin.byalph"/></a>
+                            <a class="dropdown-item" href="/showDoctorsByCategory"><fmt:message
+                                    key="navbar.admin.bycat"/></a>
+                            <a class="dropdown-item" href="/showDoctorsByCount"><fmt:message
+                                    key="navbar.admin.bycount"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item"><fmt:message key="navbar.admin.showpat"/>:</a>
+                            <a class="dropdown-item" href="/showPatientsByAlph"><fmt:message
+                                    key="navbar.admin.byalph"/></a>
+                            <a class="dropdown-item" href="/showPatientsByBirth"><fmt:message
+                                    key="navbar.admin.bybirth"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/register"><fmt:message key="navbar.admin.register"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/changePassword"><fmt:message key="navbar.changepass"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/users"><fmt:message key="navbar.admin.actions"/></a>
                         </div>
                     </li>
                 </c:when>
                 <c:when test="${sessionScope.user.role == 'doctor'}">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownDoctor" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Doctor Panel
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownDoctor"
+                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <fmt:message key="navbar.doctor.panel"/>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <form method="post">
-                                <a class="dropdown-item" href="/open_medcard">Open medcard</a>
-                                <a class="dropdown-item" href="/close_medcard">Close medcard</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/show_my_patients">Show my patients</a>
-                            </form>
+                            <a class="dropdown-item" href="/openMedcard"><fmt:message key="navbar.medic.openmed"/></a>
+                            <a class="dropdown-item" href="/closeMedcard"><fmt:message key="navbar.medic.closemed"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/showMyPatients"><fmt:message
+                                    key="navbar.doctor.patients"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/acceptSchedule"><fmt:message
+                                    key="navbar.doctor.accshedule"/></a>
+                            <a class="dropdown-item" href="/showSchedule"><fmt:message
+                                    key="navbar.doctor.showschedule"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/changePassword"><fmt:message key="navbar.changepass"/></a>
                         </div>
                     </li>
                 </c:when>
                 <c:when test="${sessionScope.user.role == 'nurse'}">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownNurse" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Nurse Panel
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownNurse"
+                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <fmt:message key="navbar.nurse.panel"/>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <form method="post">
-                                <a class="dropdown-item" href="/open_medcard">Open medcard</a>
-                                <a class="dropdown-item" href="/close_medcard">Close medcard</a>
-                            </form>
+                            <a class="dropdown-item" href="/openMedcard"><fmt:message key="navbar.medic.openmed"/></a>
+                            <a class="dropdown-item" href="/closeMedcard"><fmt:message key="navbar.medic.closemed"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/changePassword"><fmt:message key="navbar.changepass"/></a>
                         </div>
                     </li>
                 </c:when>
                 <c:when test="${sessionScope.user.role == 'patient'}">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownPatient" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Patient Panel
+                        <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownPatient"
+                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <fmt:message key="navbar.patient.panel"/>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <form method="post">
-                                <a class="dropdown-item" href="/showmed">Show my medcards notes</a>
-                            </form>
+                            <a class="dropdown-item" href="/showMedcards"><fmt:message
+                                    key="navbar.patient.showmymed"/></a>
+                            <a class="dropdown-item" href="/download"><fmt:message
+                                    key="navbar.patient.downloadmymed"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/schedule"><fmt:message key="navbar.patient.schedule"/></a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/changePassword"><fmt:message key="navbar.changepass"/></a>
                         </div>
                     </li>
                 </c:when>
+            </c:choose>
+        </ul>
+        <div class="collapse navbar-collapse" id="navbarNav2">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" class="nav-item active" href="/" id="navbarDropdownPatient"
+                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <fmt:message key="navbar.language"/>
+                    </a>
+                    <my:localization/>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
+        <ul class="navbar-nav ml-auto">
+            <c:choose>
+                <c:when test="${sessionScope.user == null}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login"><fmt:message key="navbar.login"/></a>
+                    </li>
+                </c:when>
+                <c:otherwise>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout"><fmt:message key="navbar.logout"/></a>
+                    </li>
+                </c:otherwise>
             </c:choose>
         </ul>
     </div>

@@ -5,7 +5,11 @@ import ua.nure.admin.summarytask.db.constant.DBConstant;
 import ua.nure.admin.summarytask.entity.Patient;
 import ua.nure.admin.summarytask.repository.PatientRepository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,96 +18,101 @@ public class PatientRepositoryImpl extends AbstractRepository implements Patient
     private final Logger log = Logger.getLogger(PatientRepositoryImpl.class);
 
     @Override
-    public void addPatient(Patient patient) {
+    public boolean addPatient(Patient patient) {
         Connection connection = getConnection();
-        PreparedStatement prstmt = null;
+        PreparedStatement preparedStatement = null;
+        boolean flag;
 
         try {
-            prstmt = connection.prepareStatement(DBConstant.ADD_PATIENT);
-            prstmt.setString(1, patient.getFirstname());
-            prstmt.setString(2, patient.getLastname());
-            prstmt.setString(3, patient.getBirthday());
-            prstmt.setString(4, patient.getUsername());
-            prstmt.setString(5, patient.getDoctorId());
-            prstmt.execute();
-            log.info("Patient added succesfully.");
-            prstmt = connection.prepareStatement(DBConstant.UPDATE_COUNT_PATIENT);
-            prstmt.setString(1, patient.getDoctorId());
-            prstmt.execute();
-            log.info("Count of patient update succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.ADD_PATIENT);
+            preparedStatement.setString(1, patient.getFirstname());
+            preparedStatement.setString(2, patient.getLastname());
+            preparedStatement.setString(3, patient.getBirthday());
+            preparedStatement.setString(4, patient.getUsername());
+            preparedStatement.setString(5, patient.getDoctorId());
+            preparedStatement.execute();
+            log.info("Patient added successfully.");
+            flag = true;
+            preparedStatement = connection.prepareStatement(DBConstant.UPDATE_COUNT_PATIENT);
+            preparedStatement.setString(1, patient.getDoctorId());
+            preparedStatement.execute();
+            log.info("Count of patient update successfully.");
+            flag = true;
         } catch (SQLException e) {
-            log.error("Cannot add patient: " + e);
-            e.printStackTrace();
+            log.error("Cannot add patient: ", e);
+            flag = false;
         } finally {
-            close(prstmt);
+            close(preparedStatement);
             close(connection);
         }
+        return flag;
     }
 
     @Override
     public List<Patient> getPatientsByAlphabet() {
-        List<Patient> patients = new ArrayList<Patient>();
+        List<Patient> patients = new ArrayList<>();
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_PATIENTS_BY_ALPHABET);
-            patients = extractPatients(rs);
-            log.info("Patients got succesfully.");
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(DBConstant.GET_PATIENTS_BY_ALPHABET);
+            patients = extractPatients(resultSet);
+            log.info("Patients got successfully.");
         } catch (SQLException e) {
-            log.error("Cannot get patients: " + e);
+            log.error("Cannot get patients: ", e);
             e.printStackTrace();
         } finally {
-            close(rs);
+            close(resultSet);
             close(connection);
-            close(stmt);
+            close(statement);
         }
         return patients;
     }
 
     @Override
     public List<Patient> getPatientsByBirthday() {
-        List<Patient> patients = new ArrayList<Patient>();
+        List<Patient> patients = new ArrayList<>();
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_PATIENTS_BY_BIRTHDAY);
-            patients = extractPatients(rs);
-            log.info("Patients got succesfully.");
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(DBConstant.GET_PATIENTS_BY_BIRTHDAY);
+            patients = extractPatients(resultSet);
+            log.info("Patients got successfully.");
         } catch (SQLException e) {
-            log.error("Cannot get patients: " + e);
+            log.error("Cannot get patients: ", e);
             e.printStackTrace();
         } finally {
-            close(rs);
+            close(resultSet);
             close(connection);
-            close(stmt);
+            close(statement);
         }
         return patients;
     }
 
     @Override
     public List<Patient> getPatientByDoctorId(int id) {
-        List<Patient> patients = new ArrayList<Patient>();
+        List<Patient> patients = new ArrayList<>();
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_PATIENTS_BY_DOCTOR_ID + id);
-            patients = extractPatients(rs);
-            log.info("Patients got succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.GET_PATIENTS_BY_DOCTOR_ID);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            patients = extractPatients(resultSet);
+            log.info("Patients got successfully.");
         } catch (SQLException e) {
-            log.error("Cannot get patients: " + e);
+            log.error("Cannot get patients: ", e);
         } finally {
-            close(rs);
+            close(resultSet);
             close(connection);
-            close(stmt);
+            close(preparedStatement);
         }
         return patients;
     }
@@ -111,38 +120,88 @@ public class PatientRepositoryImpl extends AbstractRepository implements Patient
     @Override
     public int getId(String username) {
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
-        int id = 0;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        int id = -1;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_PATIENT_ID + '\'' + username + '\'');
-            rs.next();
-            id = rs.getInt("id");
-            log.info("Get patient id succesfully");
+            preparedStatement = connection.prepareStatement(DBConstant.GET_PATIENT_ID);
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            id = resultSet.getInt("id");
+            log.info("Get patient id successfully");
         } catch (SQLException e) {
-            log.error("Cannot get patient id: " + e);
+            log.error("Cannot get patient id: ", e);
         } finally {
-            close(stmt);
+            close(preparedStatement);
             close(connection);
-            close(rs);
+            close(resultSet);
         }
         return id;
     }
 
-    private List<Patient> extractPatients(ResultSet rs) throws SQLException {
-        List<Patient> patients = new ArrayList<Patient>();
+    @Override
+    public String getNameById(int id) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        String result = "";
 
-        while (rs.next()) {
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.GET_NAME_BY_ID);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                result = result + resultSet.getString("firstname") + " " + resultSet.getString("lastname");
+            }
+            log.info("Get patient name successfully");
+        } catch (SQLException e) {
+            log.error("Cannot get patient name: ", e);
+        } finally {
+            close(preparedStatement);
+            close(connection);
+            close(resultSet);
+        }
+        return result;
+    }
+
+    @Override
+    public int getDoctorId(String username) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        int id = -1;
+
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.GET_DOCTOR_ID_BY_USERNAME);
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            id = resultSet.getInt("doctor_id");
+            log.info("Get doctor id successfully");
+        } catch (SQLException e) {
+            log.error("Cannot get doctor id: ", e);
+        } finally {
+            close(preparedStatement);
+            close(connection);
+            close(resultSet);
+        }
+        return id;
+    }
+
+    private List<Patient> extractPatients(ResultSet resultSet) throws SQLException {
+        List<Patient> patients = new ArrayList<>();
+
+        while (resultSet.next()) {
             Patient patient = new Patient();
 
-            patient.setId(rs.getInt("id"));
-            patient.setFirstname(rs.getString("firstname"));
-            patient.setLastname(rs.getString("lastname"));
-            patient.setBirthday(rs.getString("birthday"));
-            patient.setDoctorId(rs.getString("doctor_id"));
-            patient.setUsername(rs.getString("username"));
+            patient.setId(resultSet.getInt("id"));
+            patient.setFirstname(resultSet.getString("firstname"));
+            patient.setLastname(resultSet.getString("lastname"));
+            patient.setBirthday(resultSet.getString("birthday"));
+            patient.setDoctorId(resultSet.getString("doctor_id"));
+            patient.setUsername(resultSet.getString("username"));
 
             patients.add(patient);
         }

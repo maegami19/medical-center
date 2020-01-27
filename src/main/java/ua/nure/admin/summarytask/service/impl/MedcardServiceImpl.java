@@ -16,12 +16,19 @@ public class MedcardServiceImpl implements MedcardService {
 
     @Override
     public void addNote(Medcard medcard) {
-        medcardRepository.addNote(medcard);
+        if (validateMedcard(medcard)) {
+            medcardRepository.addNote(medcard);
+        }
     }
 
     @Override
     public List<Medcard> getMedcardByDoctor(String username) {
         return medcardRepository.getMedcardByDoctor(username);
+    }
+
+    @Override
+    public List<Medcard> getMedcardByPatient(int id) {
+        return medcardRepository.getMedcardByPatient(id);
     }
 
     @Override
@@ -32,5 +39,18 @@ public class MedcardServiceImpl implements MedcardService {
     @Override
     public void closeNote(Medcard medcard) {
         medcardRepository.closeNote(medcard);
+    }
+
+    @Override
+    public List<Medcard> getMedcardsById(int id) {
+        return medcardRepository.getMedcardsById(id);
+    }
+
+    private static boolean validateMedcard(Medcard medcard) {
+        if (medcard.getFromMedic() == null || medcard.getToPatient() == 0 || medcard.getType() == null
+                || medcard.getDescription() == null) {
+            return false;
+        }
+        return true;
     }
 }

@@ -1,7 +1,6 @@
 package ua.nure.admin.summarytask.service.impl;
 
 import ua.nure.admin.summarytask.entity.Doctor;
-import ua.nure.admin.summarytask.entity.Patient;
 import ua.nure.admin.summarytask.repository.DoctorRepository;
 import ua.nure.admin.summarytask.service.DoctorService;
 
@@ -17,7 +16,9 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public void addDoctor(Doctor doctor) {
-        doctorRepository.addDoctor(doctor);
+        if (validateDoctor(doctor)) {
+            doctorRepository.addDoctor(doctor);
+        }
     }
 
     @Override
@@ -47,6 +48,23 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public int getDoctorId(String username) {
-        return doctorRepository.getDoctorId(username);
+        if (username != null) {
+            return doctorRepository.getDoctorId(username);
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public String getNameById(int id) {
+        return doctorRepository.getNameById(id);
+    }
+
+    private static boolean validateDoctor(Doctor doctor) {
+        if (doctor.getFirstname() == null || doctor.getLastname() == null || doctor.getUsername() == null
+                || doctor.getCategory() == null) {
+            return false;
+        }
+        return true;
     }
 }

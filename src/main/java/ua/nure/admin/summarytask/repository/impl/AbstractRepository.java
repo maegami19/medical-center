@@ -31,9 +31,9 @@ public abstract class AbstractRepository {
         }
     }
 
-    protected void close(PreparedStatement prstmt) {
+    protected void close(PreparedStatement preparedStatement) {
         try {
-            prstmt.close();
+            preparedStatement.close();
         } catch (SQLException e) {
             log.error("Cannot close prepared statement: " + e);
             e.printStackTrace();

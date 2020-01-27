@@ -14,11 +14,29 @@ public class NurseServiceImpl implements NurseService {
 
     @Override
     public void addNurse(Nurse nurse) {
-        nurseRepository.addNurse(nurse);
+        if (validateNurse(nurse)) {
+            nurseRepository.addNurse(nurse);
+        }
     }
 
     @Override
     public int getNurseId(String username) {
-        return nurseRepository.getNurseId(username);
+        if (username != null) {
+            return nurseRepository.getNurseId(username);
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public String getNameById(int id) {
+        return nurseRepository.getNameById(id);
+    }
+
+    private static boolean validateNurse(Nurse nurse) {
+        if (nurse.getFirstname() == null || nurse.getLastname() == null || nurse.getUsername() == null) {
+            return false;
+        }
+        return true;
     }
 }

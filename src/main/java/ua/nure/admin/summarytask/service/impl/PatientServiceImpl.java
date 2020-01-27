@@ -16,7 +16,9 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public void addPatient(Patient patient) {
-        patientRepository.addPatient(patient);
+        if (validatePatient(patient)) {
+            patientRepository.addPatient(patient);
+        }
     }
 
     @Override
@@ -36,6 +38,28 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public int getId(String username) {
-        return patientRepository.getId(username);
+        if (username != null) {
+            return patientRepository.getId(username);
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public String getNameById(int id) {
+        return patientRepository.getNameById(id);
+    }
+
+    @Override
+    public int getDoctorId(String username) {
+        return patientRepository.getDoctorId(username);
+    }
+
+    private static boolean validatePatient(Patient patient) {
+        if (patient.getFirstname() == null || patient.getLastname() == null || patient.getBirthday() == null
+                || patient.getUsername() == null || patient.getDoctorId() == null) {
+            return false;
+        }
+        return true;
     }
 }

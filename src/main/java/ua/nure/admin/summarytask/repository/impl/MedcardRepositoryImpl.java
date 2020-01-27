@@ -5,7 +5,10 @@ import ua.nure.admin.summarytask.db.constant.DBConstant;
 import ua.nure.admin.summarytask.entity.Medcard;
 import ua.nure.admin.summarytask.repository.MedcardRepository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,103 +17,157 @@ public class MedcardRepositoryImpl extends AbstractRepository implements Medcard
     private final Logger log = Logger.getLogger(MedcardRepositoryImpl.class);
 
     @Override
-    public void addNote(Medcard medcard) {
+    public boolean addNote(Medcard medcard) {
         Connection connection = getConnection();
-        PreparedStatement prstmt = null;
+        PreparedStatement preparedStatement = null;
+        boolean flag = false;
 
         try {
-            prstmt = connection.prepareStatement(DBConstant.ADD_NOTE_TO_MEDCARD);
-            prstmt.setString(1, medcard.getFromMedic());
-            prstmt.setInt(2, medcard.getToPatient());
-            prstmt.setString(3, medcard.getType());
-            prstmt.setString(4, medcard.getDescription());
-            prstmt.setString(5, medcard.getStatus());
-            prstmt.execute();
-            log.info("Note to medcard added succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.ADD_NOTE_TO_MEDCARD);
+            preparedStatement.setString(1, medcard.getFromMedic());
+            preparedStatement.setInt(2, medcard.getToPatient());
+            preparedStatement.setString(3, medcard.getType());
+            preparedStatement.setString(4, medcard.getDescription());
+            preparedStatement.setString(5, medcard.getStatus());
+            preparedStatement.execute();
+            flag = true;
+            log.info("Note to medcard added successfully.");
         } catch (SQLException e) {
-            log.error("Cannot add note to medcard: " + e);
+            log.error("Cannot add note to medcard: ", e);
         } finally {
-            close(prstmt);
+            close(preparedStatement);
             close(connection);
         }
+        return flag;
     }
 
     @Override
     public List<Medcard> getMedcardByDoctor(String username) {
-        List<Medcard> medcards = new ArrayList<Medcard>();
+        List<Medcard> medcards = new ArrayList<>();
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_MEDCARD_BY_DOCTOR + '\'' + username + '\'' + " AND status='active'");
-            medcards = extractMedcards(rs);
-            log.info("Medcards got succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.GET_MEDCARD_BY_DOCTOR);
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.executeQuery();
+            medcards = extractMedcards(resultSet);
+            log.info("Medcards got successfully.");
         } catch (SQLException e) {
-            log.error("Cannot get medcards: " + e);
+            log.error("Cannot get medcards: ", e);
         } finally {
-            close(rs);
+            close(resultSet);
             close(connection);
-            close(stmt);
+            close(preparedStatement);
         }
         return medcards;
     }
 
     @Override
-    public void closeNote(Medcard medcard) {
+    public List<Medcard> getMedcardByPatient(int id) {
+        List<Medcard> medcards = new ArrayList<>();
         Connection connection = getConnection();
-        PreparedStatement prstmt = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
-            prstmt = connection.prepareStatement(DBConstant.CLOSE_MEDCARD);
-            prstmt.setString(1, medcard.getDiagnosis());
-            prstmt.setInt(2, medcard.getId());
-            prstmt.execute();
-            log.info("Medcard closed succesfully");
+            preparedStatement = connection.prepareStatement(DBConstant.GET_MEDCARD_BY_PATIENT);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            medcards = extractMedcards(resultSet);
+            log.info("Medcards got successfully.");
         } catch (SQLException e) {
-            log.error("Cannot close medcard: " + e);
+            log.error("Cannot get medcards: ", e);
         } finally {
-            close(prstmt);
+            close(resultSet);
+            close(connection);
+            close(preparedStatement);
+        }
+        return medcards;
+    }
+
+    @Override
+    public boolean closeNote(Medcard medcard) {
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        boolean flag = false;
+
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.CLOSE_MEDCARD);
+            preparedStatement.setString(1, medcard.getDiagnosis());
+            preparedStatement.setInt(2, medcard.getId());
+            preparedStatement.execute();
+            flag = true;
+            log.info("Medcard closed successfully");
+        } catch (SQLException e) {
+            log.error("Cannot close medcard: ", e);
+        } finally {
+            close(preparedStatement);
             close(connection);
         }
+        return flag;
     }
 
     @Override
     public List<Medcard> getAllMedcards(int id) {
-        List<Medcard> medcards = new ArrayList<Medcard>();
+        List<Medcard> medcards = new ArrayList<>();
         Connection connection = getConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
         try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(DBConstant.GET_ALL_MEDCARDS + id);
-            medcards = extractMedcards(rs);
-            log.info("Medcards got succesfully.");
+            preparedStatement = connection.prepareStatement(DBConstant.GET_ALL_MEDCARDS);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            medcards = extractMedcards(resultSet);
+            log.info("Medcards got successfully.");
         } catch (SQLException e) {
-            log.error("Cannot get medcards: " + e);
+            log.error("Cannot get medcards: ", e);
         } finally {
-            close(rs);
+            close(resultSet);
             close(connection);
-            close(stmt);
+            close(preparedStatement);
         }
         return medcards;
     }
 
-    private List<Medcard> extractMedcards(ResultSet rs) throws SQLException {
-        List<Medcard> medcards = new ArrayList<Medcard>();
+    @Override
+    public List<Medcard> getMedcardsById(int id) {
+        List<Medcard> medcards = new ArrayList<>();
+        Connection connection = getConnection();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
-        while (rs.next()) {
+        try {
+            preparedStatement = connection.prepareStatement(DBConstant.GET_MEDCARD_BY_ID);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            medcards = extractMedcards(resultSet);
+            log.info("Medcard got successfully.");
+        } catch (SQLException e) {
+            log.error("Cannot get medcard: ", e);
+        } finally {
+            close(resultSet);
+            close(connection);
+            close(preparedStatement);
+        }
+        return medcards;
+    }
+
+    private List<Medcard> extractMedcards(ResultSet resultSet) throws SQLException {
+        List<Medcard> medcards = new ArrayList<>();
+
+        while (resultSet.next()) {
             Medcard medcard = new Medcard();
 
-            medcard.setId(rs.getInt("id"));
-            medcard.setFromMedic(rs.getString("from_medic"));
-            medcard.setToPatient(rs.getInt("to_patient"));
-            medcard.setType(rs.getString("type"));
-            medcard.setDescription(rs.getString("description"));
-            medcard.setStatus(rs.getString("status"));
-            medcard.setDiagnosis(rs.getString("diagnosis"));
+            medcard.setId(resultSet.getInt("id"));
+            medcard.setFromMedic(resultSet.getString("from_medic"));
+            medcard.setToPatient(resultSet.getInt("to_patient"));
+            medcard.setType(resultSet.getString("type"));
+            medcard.setDescription(resultSet.getString("description"));
+            medcard.setStatus(resultSet.getString("status"));
+            medcard.setDiagnosis(resultSet.getString("diagnosis"));
 
             medcards.add(medcard);
         }
